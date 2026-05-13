@@ -1,20 +1,38 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import sklearn
 
 st.title("Penguin Body Mass Predictor")
 
-try:
-    # Attempt to load the model
-    model = joblib.load('penguin_model.joblib')
-    st.success("Model loaded successfully!")
+# Load the model
+model = joblib.load('penguin_model.joblib')
+
+# Create Input Fields
+st.sidebar.header('User Input Features')
+
+def user_input_features():
+    island = st.sidebar.selectbox('Island', ('Biscoe', 'Dream', 'Torgersen'))
+    sex = st.sidebar.selectbox('Sex', ('male', 'female'))
+    bill_length_mm = st.sidebar.slider('Bill length (mm)', 32.1, 59.6, 43.9)
+    bill_depth_mm = st.sidebar.slider('Bill depth (mm)', 13.1, 21.5, 17.2)
+    flipper_length_mm = st.sidebar.slider('Flipper length (mm)', 172.0, 231.0, 201.0)
     
-    # Insert your prediction logic here (sliders, inputs, etc.)
-    
-except Exception as e:
-    st.error(f"Model loading failed: {e}")
-    st.write("### Diagnostic Info:")
-    st.write(f"**Current scikit-learn version:** {sklearn.__version__}")
-    st.write(f"**Current Python version:** 3.12")
-    st.info("If the version above doesn't match the one used to create the model, update your requirements.txt.")
+    data = {'island': island,
+            'bill_length_mm': bill_length_mm,
+            'bill_depth_mm': bill_depth_mm,
+            'flipper_length_mm': flipper_length_mm,
+            'sex': sex}
+    features = pd.DataFrame(data, index=[0])
+    return features
+
+input_df = user_input_features()
+
+# Display User Input
+st.subheader('User Input parameters')
+st.write(input_df)
+
+# Prediction
+prediction = model.predict(input_df)
+
+st.subheader('Prediction')
+st.write(f"The predicted body mass is **{prediction[0]:.2f} grams**")
